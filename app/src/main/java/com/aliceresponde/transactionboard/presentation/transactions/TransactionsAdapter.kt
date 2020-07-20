@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.aliceresponde.transactionboard.R
 import com.aliceresponde.transactionboard.databinding.TransactionRowBinding
-import com.aliceresponde.transactionboard.presentation.Transaction
+import com.aliceresponde.transactionboard.domain.Transaction
 import com.google.android.material.snackbar.Snackbar
 
 class TransactionsAdapter(
@@ -49,20 +49,26 @@ class TransactionsAdapter(
         holder.onBind(transactions[position], position)
     }
 
-    fun deleteTransaction(holder: RecyclerView.ViewHolder) {
+    fun deleteItem(holder: RecyclerView.ViewHolder) {
         val index = holder.adapterPosition
         removedPos = index
         removedItem = transactions[index]
         transactions.removeAt(index)
         notifyDataSetChanged()
 
-        Snackbar.make(holder.itemView, "Item removed", Snackbar.LENGTH_LONG).apply {
-            setAction("UNDO") {
-                transactions.add(removedPos, removedItem)
-                notifyDataSetChanged()
-            }
+        Snackbar.make(
+            holder.itemView,
+            holder.itemView.context.getString(R.string.item_removed),
+            Snackbar.LENGTH_LONG
+        ).apply {
+            setAction(context.getString(R.string.undo)) { unDeleteItem() }
             show()
         }
+    }
+
+    private fun unDeleteItem() {
+        transactions.add(removedPos, removedItem)
+        notifyDataSetChanged()
     }
 
     fun addTransactions(data: List<Transaction>) {

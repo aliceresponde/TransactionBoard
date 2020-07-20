@@ -1,4 +1,4 @@
-package com.aliceresponde.transactionboard.presentation
+package com.aliceresponde.transactionboard.domain
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

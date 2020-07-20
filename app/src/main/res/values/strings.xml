@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">TransactionBoard</string>
+    <string name="item_removed">Item removed</string>
+    <string name="undo">UNDO</string>
+    <string name="delete_all">Delete all</string>
+    <string name="restore_all">Restore all</string>
 </resources>

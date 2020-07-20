@@ -36,7 +36,7 @@
 
     <View
         android:id="@+id/transaction_state"
-        android:layout_width="8dp"
+        android:layout_width="16dp"
         android:layout_height="0dp"
         android:background="@color/yellow"
         app:layout_constraintBottom_toBottomOf="parent"

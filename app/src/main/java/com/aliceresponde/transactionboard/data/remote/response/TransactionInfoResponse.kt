@@ -1,4 +1,4 @@
-package com.aliceresponde.transactionboard.data.remote
+package com.aliceresponde.transactionboard.data.remote.response
 
 data class TransactionInfoResponse(
     val transactionId: Int,
