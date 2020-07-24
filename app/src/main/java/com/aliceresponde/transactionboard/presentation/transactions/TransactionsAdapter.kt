@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.aliceresponde.transactionboard.R
 import com.aliceresponde.transactionboard.databinding.TransactionRowBinding
-import com.aliceresponde.transactionboard.domain.Transaction
+import com.aliceresponde.transactionboard.domain.model.Transaction
 import com.google.android.material.snackbar.Snackbar
 
 class TransactionsAdapter(
@@ -23,7 +23,7 @@ class TransactionsAdapter(
         fun onBind(transaction: Transaction, position: Int) {
             binding.apply {
                 transactionCommerceName.text = transaction.commerceName
-                transactionDate.text = transaction.date
+                transactionDate.text = transaction.createdDate
                 transactionState.setBackgroundColor(
                     if (transaction.isNew && position < 20)
                         ContextCompat.getColor(itemView.context, R.color.yellow)

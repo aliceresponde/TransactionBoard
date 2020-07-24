@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.ItemTouchHelper.RIGHT
 import androidx.recyclerview.widget.RecyclerView
 import com.aliceresponde.transactionboard.R
 import com.aliceresponde.transactionboard.databinding.FragmentTransactionsBinding
-import com.aliceresponde.transactionboard.domain.Transaction
+import com.aliceresponde.transactionboard.domain.model.Transaction
 
 class TransactionsFragment : Fragment() {
     private lateinit var binding: FragmentTransactionsBinding
@@ -161,13 +161,69 @@ class TransactionsFragment : Fragment() {
 
     private fun createFakeTransactions(): MutableList<Transaction> {
         return mutableListOf(
-            Transaction("1", 200, 2, "2020-01-22", "viva", "bogota", "Juan", true),
-            Transaction("1", 200, 2, "2020-01-23", "viva", "bogota", "Juan", true),
-            Transaction("1", 200, 2, "2020-01-24", "viva", "bogota", "Juan", true),
-            Transaction("1", 200, 2, "2020-01-25", "viva", "bogota", "Juan", true),
-            Transaction("1", 200, 2, "2020-01-26", "viva", "bogota", "Juan", true),
-            Transaction("1", 200, 2, "2020-01-27", "viva", "bogota", "Juan", false),
-            Transaction("1", 200, 2, "2020-01-28", "viva", "bogota", "Juan", true)
+            Transaction(
+                1,
+                200,
+                1,
+                "2020-02-22",
+                "viva",
+                "bogota",
+                true
+            ),
+            Transaction(
+                2,
+                201,
+                2,
+                "2020-01-24",
+                "viva",
+                "bogota",
+                true
+            ),
+            Transaction(
+                3,
+                202,
+                2,
+                "2020-01-22",
+                "viva",
+                "bogota",
+                true
+            ),
+            Transaction(
+                4,
+                203,
+                2,
+                "2020-01-25",
+                "viva",
+                "bogota",
+                true
+            ),
+            Transaction(
+                5,
+                204,
+                2,
+                "2020-01-26",
+                "viva",
+                "bogota",
+                true
+            ),
+            Transaction(
+                6,
+                200,
+                2,
+                "2020-01-27",
+                "viva",
+                "bogota",
+                false
+            ),
+            Transaction(
+                7,
+                205,
+                2,
+                "2020-01-28",
+                "viva",
+                "bogota",
+                true
+            )
 
         )
     }

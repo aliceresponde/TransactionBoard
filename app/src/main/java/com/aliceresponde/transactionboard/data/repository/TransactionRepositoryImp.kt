@@ -1,6 +1,6 @@
 package com.aliceresponde.transactionboard.data.repository
 
-import com.aliceresponde.transactionboard.domain.Transaction
+import com.aliceresponde.transactionboard.domain.model.Transaction
 import com.aliceresponde.transactionboard.domain.useCase.TransactionUseCases
 
 class TransactionRepositoryImp (private val  useCase: TransactionUseCases) : TransactionRepository {

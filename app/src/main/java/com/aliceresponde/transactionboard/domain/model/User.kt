@@ -1,4 +1,4 @@
-package com.aliceresponde.transactionboard.domain
+package com.aliceresponde.transactionboard.domain.model
 
 data class User(
     val name: String,

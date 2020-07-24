@@ -9,5 +9,18 @@
         android:id="@+id/transactionsFragment"
         tools:layout="@layout/fragment_transactions"
         android:name="com.aliceresponde.transactionboard.presentation.transactions.TransactionsFragment"
-        android:label="TransactionsFragment" />
+        android:label="TransactionsFragment" >
+        <action
+            android:id="@+id/action_transactionsFragment_to_transactionDetailFragment"
+            app:destination="@id/transactionDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/transactionDetailFragment"
+        tools:layout="@layout/fragment_transaction_detail"
+        android:name="com.aliceresponde.transactionboard.presentation.detail.TransactionDetailFragment"
+        android:label="TransactionDetailFragment" >
+        <argument
+            android:name="transaction"
+            app:argType="com.aliceresponde.transactionboard.domain.model.Transaction" />
+    </fragment>
 </navigation>
