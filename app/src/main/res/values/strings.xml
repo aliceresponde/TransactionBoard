@@ -4,4 +4,6 @@
     <string name="undo">UNDO</string>
     <string name="delete_all">Delete all</string>
     <string name="restore_all">Restore all</string>
+    <string name="no_transactions">No transactions able</string>
+    <string name="internet_error">Network connection failure. \nPlease check your connection</string>
 </resources>

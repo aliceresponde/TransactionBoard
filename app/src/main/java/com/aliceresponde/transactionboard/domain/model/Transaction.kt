@@ -11,5 +11,5 @@ data class Transaction(
     val createdDate: String,
     val commerceName: String,
     val branchName: String,
-    val isNew: Boolean = true
+    var isNew: Boolean = true
 ) : Parcelable

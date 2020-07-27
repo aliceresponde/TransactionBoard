@@ -1,9 +1,7 @@
 package com.aliceresponde.transactionboard
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
-class TransactionApp : Application(){
-    override fun onCreate() {
-        super.onCreate()
-    }
-}
+@HiltAndroidApp
+class TransactionApp : Application()

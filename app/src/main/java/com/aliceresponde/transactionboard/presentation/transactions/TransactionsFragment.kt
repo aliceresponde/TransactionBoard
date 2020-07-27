@@ -1,8 +1,11 @@
 package com.aliceresponde.transactionboard.presentation.transactions
 
 import android.graphics.Canvas
+import android.graphics.drawable.ClipDrawable.VERTICAL
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.icu.lang.UCharacter.IndicPositionalCategory.LEFT
+import android.icu.lang.UCharacter.IndicPositionalCategory.RIGHT
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,18 +14,20 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.ItemTouchHelper.LEFT
-import androidx.recyclerview.widget.ItemTouchHelper.RIGHT
 import androidx.recyclerview.widget.RecyclerView
 import com.aliceresponde.transactionboard.R
 import com.aliceresponde.transactionboard.databinding.FragmentTransactionsBinding
 import com.aliceresponde.transactionboard.domain.model.Transaction
+import dagger.hilt.android.AndroidEntryPoint
 
+
+@AndroidEntryPoint
 class TransactionsFragment : Fragment() {
     private lateinit var binding: FragmentTransactionsBinding
+    private val viewModel: TransactionsViewModel by viewModels()
     private val adapter: TransactionsAdapter by lazy {
         TransactionsAdapter(
             transactions = createFakeTransactions(),
@@ -30,7 +35,6 @@ class TransactionsFragment : Fragment() {
         )
     }
 
-    private val viewModel: TransactionsViewModel by viewModels()
     private lateinit var swipeBackground: ColorDrawable
     private lateinit var deleteIcon: Drawable
 
@@ -118,9 +122,7 @@ class TransactionsFragment : Fragment() {
                     isCurrentlyActive
                 )
             }
-
         }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -133,16 +135,19 @@ class TransactionsFragment : Fragment() {
             container,
             false
         )
-        binding.apply {
-            viewModel = this@TransactionsFragment.viewModel
-        }
 
         activity?.baseContext?.let {
             swipeBackground = ColorDrawable(ContextCompat.getColor(it, R.color.red))
             deleteIcon = ContextCompat.getDrawable(it, R.drawable.ic_delete)!!
         }
 
+        binding.lifecycleOwner = this
+        binding.viewModel = viewModel
+        viewModel.transactions.observe(viewLifecycleOwner, Observer {
+            adapter.addTransactions(it)
+        })
 
+        viewModel.getTransactions()
         setupRecycler()
         return binding.root
     }
@@ -153,6 +158,12 @@ class TransactionsFragment : Fragment() {
         val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback).apply {
             attachToRecyclerView(transactionRecyclerView)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (binding.root.parent != null) (binding.root
+            .parent as ViewGroup).removeView(binding.root)
     }
 
     private fun navigateToTransactionInfo(transaction: Transaction) {
@@ -224,7 +235,6 @@ class TransactionsFragment : Fragment() {
                 "bogota",
                 true
             )
-
         )
     }
 }

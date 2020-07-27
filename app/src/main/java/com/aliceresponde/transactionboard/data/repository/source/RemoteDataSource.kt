@@ -1,4 +1,4 @@
-package com.aliceresponde.transactionboard.data.remote
+package com.aliceresponde.transactionboard.data.repository.source
 
 import com.aliceresponde.transactionboard.data.remote.response.TransactionInfoResponse
 import com.aliceresponde.transactionboard.data.remote.response.TransactionsResponse

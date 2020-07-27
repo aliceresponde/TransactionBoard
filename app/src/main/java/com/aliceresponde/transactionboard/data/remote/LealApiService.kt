@@ -13,7 +13,7 @@ import retrofit2.http.Path
 
 interface LealApiService {
     companion object {
-        private const val BASE_URL = "https:://mobiletest.leal.co/"
+        private const val BASE_URL = "https://mobiletest.leal.co/"
 
         operator fun invoke(interceptor: Interceptor): LealApiService {
             val logInterceptor = HttpLoggingInterceptor().apply {

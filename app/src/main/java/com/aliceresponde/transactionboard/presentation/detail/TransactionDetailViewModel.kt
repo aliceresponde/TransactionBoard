@@ -8,7 +8,7 @@ import com.aliceresponde.transactionboard.domain.model.Transaction
 import com.aliceresponde.transactionboard.domain.model.User
 import com.aliceresponde.transactionboard.domain.useCase.TransactionInfo
 
-class TransactionDetailViewModel : ViewModel(){
+class TransactionDetailViewModel  : ViewModel(){
     private val _userInfoVisibility = MutableLiveData<Int>(GONE)
     val userInfoVisibility: LiveData<Int> get() = _userInfoVisibility
 
