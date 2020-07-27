@@ -1,5 +1,6 @@
 package com.aliceresponde.transactionboard.di
 
+import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.aliceresponde.transactionboard.data.local.AppDatabase
@@ -26,9 +27,9 @@ import javax.inject.Singleton
 object DataModule {
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+    fun provideDatabase(app: Application): AppDatabase {
         return Room.databaseBuilder(
-            context,
+            app,
             AppDatabase::class.java,
             "database-name"
         ).build()
