@@ -1,7 +1,7 @@
 package com.aliceresponde.transactionboard.data.remote
 
 import com.aliceresponde.transactionboard.data.remote.response.TransactionInfoResponse
-import com.aliceresponde.transactionboard.data.remote.response.TransactionsResponse
+import com.aliceresponde.transactionboard.data.remote.response.TransactionResponse
 import com.aliceresponde.transactionboard.data.remote.response.UserResponse
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -36,7 +36,7 @@ interface LealApiService {
 
     // https://mobiletest.leal.co/transactions
     @GET("transactions")
-    suspend fun getTransactions(): TransactionsResponse
+    suspend fun getTransactions(): List<TransactionResponse>
 
     // https://mobiletest.leal.co/users/1
     @GET("users/{id}")

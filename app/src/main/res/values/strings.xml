@@ -6,4 +6,5 @@
     <string name="restore_all">Restore all</string>
     <string name="no_transactions">No transactions able</string>
     <string name="internet_error">Network connection failure. \nPlease check your connection</string>
+    <string name="no_data">No data to show</string>
 </resources>

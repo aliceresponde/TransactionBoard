@@ -1,5 +1,6 @@
 package com.aliceresponde.transactionboard.presentation.transactions
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +12,8 @@ import com.aliceresponde.transactionboard.domain.model.Transaction
 import com.google.android.material.snackbar.Snackbar
 
 class TransactionsAdapter(
-    private val transactions: MutableList<Transaction> = mutableListOf(),
-    private val callback: (Transaction) -> Unit
+    private var transactions: MutableList<Transaction> = mutableListOf(),
+    private val onItemClicked: (Transaction) -> Unit
 ) : RecyclerView.Adapter<TransactionsAdapter.TransactionViewHolder>() {
     private var removedPos = -1
     private lateinit var removedItem: Transaction
@@ -25,13 +26,12 @@ class TransactionsAdapter(
                 transactionCommerceName.text = transaction.commerceName
                 transactionDate.text = transaction.createdDate
                 transactionState.setBackgroundColor(
-                    if (transaction.isNew && position < 20)
-                        ContextCompat.getColor(itemView.context, R.color.yellow)
+                    if (transaction.isNew && position < 20) ContextCompat.getColor(itemView.context, R.color.yellow)
                     else ContextCompat.getColor(itemView.context, R.color.gray)
                 )
             }
             itemView.setOnClickListener {
-                callback(transaction)
+                onItemClicked(transaction)
             }
         }
     }
@@ -72,7 +72,8 @@ class TransactionsAdapter(
     }
 
     fun addTransactions(data: List<Transaction>) {
-        transactions.addAll(data)
+        transactions = data.toMutableList()
+        Log.d("adapter", "drawed ${transactions.size}")
         notifyDataSetChanged()
     }
 }

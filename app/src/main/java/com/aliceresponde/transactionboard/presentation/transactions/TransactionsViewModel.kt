@@ -8,16 +8,20 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aliceresponde.transactionboard.domain.model.Transaction
-import com.aliceresponde.transactionboard.domain.useCase.GetTransactionsUseCase
+import com.aliceresponde.transactionboard.domain.useCase.transaction.GetTransactionsUseCase
 import com.aliceresponde.transactionboard.presentation.transactions.TransactionMessage.EMPTY
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TransactionsViewModel @ViewModelInject constructor(private val useCase: GetTransactionsUseCase) :
-    ViewModel() {
-    private val _transactions = MutableLiveData<List<Transaction>>()
+class TransactionsViewModel @ViewModelInject constructor
+    (private val useCase: GetTransactionsUseCase) : ViewModel() {
+
+    private val _transactions = MutableLiveData<List<Transaction>>(listOf())
     val transactions: LiveData<List<Transaction>> get() = _transactions
+
+    private val _labelMessage = MutableLiveData<TransactionMessage>()
+    val labelMessage: LiveData<TransactionMessage> get() = _labelMessage
 
     private val _transactionVisibility = MutableLiveData<Int>(GONE)
     val transactionVisibility: LiveData<Int> get() = _transactionVisibility
@@ -28,15 +32,18 @@ class TransactionsViewModel @ViewModelInject constructor(private val useCase: Ge
     private val _messageVisibility = MutableLiveData<Int>(GONE)
     val messageVisibility: LiveData<Int> get() = _messageVisibility
 
-    private val _labelMessage = MutableLiveData<TransactionMessage>()
-    val labelMessage: LiveData<TransactionMessage> get() = _labelMessage
 
     fun getTransactions() {
+        transactions.value?.let {
+            if (it.isNotEmpty()) return
+        }
         viewModelScope.launch {
             withContext(IO) {
+                showLoading()
                 val data = useCase.getTransactions()
-                if (data.isEmpty()) setMessage(EMPTY)
+                if (data.isEmpty()) noDataAble()
                 else showData(data)
+                _loadingVisibility.postValue(GONE)
             }
         }
     }
@@ -44,7 +51,11 @@ class TransactionsViewModel @ViewModelInject constructor(private val useCase: Ge
     fun deleteAllTransactions() {
         viewModelScope.launch {
             withContext(IO) {
-                useCase.deleteAllTransactions()
+                showLoading()
+                val data = useCase.deleteAllTransactions()
+                if (data.isEmpty()) noDataAble()
+                else showData(data)
+                _loadingVisibility.postValue(GONE)
             }
         }
     }
@@ -52,20 +63,36 @@ class TransactionsViewModel @ViewModelInject constructor(private val useCase: Ge
     fun restoreTransactions() {
         viewModelScope.launch {
             withContext(IO) {
-                useCase.restoreData()
+                showLoading()
+                val data = useCase.restoreData()
+                if (data.isEmpty()) noDataAble()
+                else showData(data)
+                _loadingVisibility.postValue(GONE)
             }
         }
     }
 
-    private fun showData(data: List<Transaction>) {
+    private fun showLoading() {
+        _loadingVisibility.postValue(VISIBLE)
         _messageVisibility.postValue(GONE)
-        _loadingVisibility.postValue(GONE)
+        _transactionVisibility.postValue(GONE)
+    }
+
+    private fun noDataAble() {
+        _messageVisibility.postValue(VISIBLE)
+        _labelMessage.postValue(EMPTY)
+        _transactionVisibility.postValue(GONE)
+        _transactions.postValue(listOf())
+    }
+
+    private fun showData(data: List<Transaction>) {
+        _transactions.postValue(data)
+        _messageVisibility.postValue(GONE)
         _transactionVisibility.postValue(VISIBLE)
         _transactions.postValue(data)
     }
 
     private fun setMessage(message: TransactionMessage) {
-        _loadingVisibility.postValue(GONE)
         _labelMessage.postValue(message)
         _messageVisibility.postValue(VISIBLE)
         _transactionVisibility.postValue(GONE)

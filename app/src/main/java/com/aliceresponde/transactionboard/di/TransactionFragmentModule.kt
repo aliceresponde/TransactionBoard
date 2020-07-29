@@ -1,6 +1,6 @@
 package com.aliceresponde.transactionboard.di
 
-import com.aliceresponde.transactionboard.domain.useCase.GetTransactionsUseCase
+import com.aliceresponde.transactionboard.domain.useCase.transaction.GetTransactionsUseCase
 import com.aliceresponde.transactionboard.presentation.transactions.TransactionsViewModel
 import dagger.Module
 import dagger.Provides

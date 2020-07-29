@@ -8,12 +8,15 @@ import com.aliceresponde.transactionboard.data.local.RoomDataSource
 import com.aliceresponde.transactionboard.data.remote.LealApiService
 import com.aliceresponde.transactionboard.data.remote.NetworkConnectionInterceptor
 import com.aliceresponde.transactionboard.data.remote.RetrofitDataSource
-import com.aliceresponde.transactionboard.data.repository.TransactionRepository
-import com.aliceresponde.transactionboard.data.repository.TransactionRepositoryImp
+import com.aliceresponde.transactionboard.data.repository.*
 import com.aliceresponde.transactionboard.data.repository.source.LocalDataSource
 import com.aliceresponde.transactionboard.data.repository.source.RemoteDataSource
-import com.aliceresponde.transactionboard.domain.useCase.GetTransactionsUseCase
-import com.aliceresponde.transactionboard.domain.useCase.GetTransactionsUseCaseImp
+import com.aliceresponde.transactionboard.domain.useCase.transaction.GetTransactionsUseCase
+import com.aliceresponde.transactionboard.domain.useCase.transaction.GetTransactionsUseCaseImp
+import com.aliceresponde.transactionboard.domain.useCase.transactionInfo.GetTransactionsInfoUseCase
+import com.aliceresponde.transactionboard.domain.useCase.transactionInfo.GetTransactionsInfoUseCaseImp
+import com.aliceresponde.transactionboard.domain.useCase.userinfo.GetUserInfoUseCase
+import com.aliceresponde.transactionboard.domain.useCase.userinfo.GetUserInfoUseCaseImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,12 +37,6 @@ object DataModule {
             "database-name"
         ).build()
     }
-
-
-    @Provides
-    @Singleton
-    fun provideGetTransactionUseCase(repository: TransactionRepository): GetTransactionsUseCase =
-        GetTransactionsUseCaseImp(repository)
 
     @Provides
     @Singleton
@@ -67,4 +64,30 @@ object DataModule {
         remoteDataSource: RemoteDataSource,
         localDataSource: LocalDataSource
     ): TransactionRepository = TransactionRepositoryImp(remoteDataSource, localDataSource)
+
+    @Provides
+    @Singleton
+    fun provideUserInfoRepository(remoteDataSource: RemoteDataSource): UserInfoRepository =
+        UserInfoRepositoryImp(remoteDataSource)
+
+    @Provides
+    @Singleton
+    fun provideTransactionInfoRepository(remoteDataSource: RemoteDataSource): TransactionInfoRepository =
+        TransactionInfoRepositoryImpl(remoteDataSource)
+
+//    =============use cases ===================
+
+    @Provides
+    @Singleton
+    fun provideGetTransactionUseCase(repository: TransactionRepository): GetTransactionsUseCase =
+        GetTransactionsUseCaseImp(repository)
+
+    @Provides
+    @Singleton
+    fun provideGetTransactionInfoUseCase(repository: TransactionInfoRepository): GetTransactionsInfoUseCase =
+        GetTransactionsInfoUseCaseImp(repository)
+
+    @Provides
+    @Singleton
+    fun providesGetUserInfoUseCase(repository : UserInfoRepository) : GetUserInfoUseCase = GetUserInfoUseCaseImpl(repository)
 }

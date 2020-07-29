@@ -4,7 +4,6 @@ import android.graphics.Canvas
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.icu.lang.UCharacter.IndicPositionalCategory.LEFT
-import android.icu.lang.UCharacter.IndicPositionalCategory.RIGHT
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,12 +14,14 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.aliceresponde.transactionboard.R
 import com.aliceresponde.transactionboard.databinding.FragmentTransactionsBinding
 import com.aliceresponde.transactionboard.domain.model.Transaction
+import com.aliceresponde.transactionboard.presentation.transactions.TransactionMessage.EMPTY
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -28,19 +29,14 @@ import dagger.hilt.android.AndroidEntryPoint
 class TransactionsFragment : Fragment() {
     private lateinit var binding: FragmentTransactionsBinding
     private val viewModel: TransactionsViewModel by viewModels()
-    private val adapter: TransactionsAdapter by lazy {
-        TransactionsAdapter(
-            transactions = createFakeTransactions(),
-            callback = this::navigateToTransactionInfo
-        )
-    }
+    private val adapter: TransactionsAdapter by lazy { TransactionsAdapter(onItemClicked = this::navigateToTransactionInfo) }
 
     private lateinit var swipeBackground: ColorDrawable
     private lateinit var deleteIcon: Drawable
 
     private val transactionRecyclerView: RecyclerView by lazy { binding.transactions }
     private val itemTouchHelperCallback =
-        object : ItemTouchHelper.SimpleCallback(0, LEFT or RIGHT) {
+        object : ItemTouchHelper.SimpleCallback(0, LEFT) {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -63,20 +59,7 @@ class TransactionsFragment : Fragment() {
                 val itemView = viewHolder.itemView
                 val iconMargin = (itemView.height - deleteIcon.intrinsicHeight) / 2
 
-                if (dX > 0) { // right  swipe
-                    swipeBackground.setBounds(
-                        itemView.left,
-                        itemView.top,
-                        dX.toInt(),
-                        itemView.bottom
-                    )
-                    deleteIcon.setBounds(
-                        itemView.left + iconMargin,
-                        itemView.top + iconMargin,
-                        itemView.left + iconMargin + deleteIcon.minimumWidth,
-                        itemView.bottom - iconMargin
-                    )
-                } else {
+                if (dX < 0) { // left  swipe
                     swipeBackground.setBounds(
                         itemView.right + dX.toInt(),
                         itemView.top,
@@ -94,21 +77,10 @@ class TransactionsFragment : Fragment() {
 
                 swipeBackground.draw(c)
                 c.save()
-                if (dX > 0) {
-                    c.clipRect(
-                        itemView.left,
-                        itemView.top,
-                        dX.toInt(),
-                        itemView.bottom
-                    )
-                } else {
-                    c.clipRect(
-                        itemView.left,
-                        itemView.top,
-                        dX.toInt(),
-                        itemView.bottom
-                    )
+                if (dX < 0) {
+                    c.clipRect(itemView.right, itemView.top, dX.toInt(), itemView.bottom)
                 }
+
                 c.restore()
                 deleteIcon.draw(c)
 
@@ -135,22 +107,37 @@ class TransactionsFragment : Fragment() {
             container,
             false
         )
-
         activity?.baseContext?.let {
             swipeBackground = ColorDrawable(ContextCompat.getColor(it, R.color.red))
             deleteIcon = ContextCompat.getDrawable(it, R.drawable.ic_delete)!!
         }
-
-        binding.lifecycleOwner = this
-        binding.viewModel = viewModel
-        viewModel.transactions.observe(viewLifecycleOwner, Observer {
-            adapter.addTransactions(it)
-        })
-
-        viewModel.getTransactions()
-        setupRecycler()
         return binding.root
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.apply {
+            viewModel = this@TransactionsFragment.viewModel
+            lifecycleOwner = this@TransactionsFragment
+            deleteAllTransactions.setOnClickListener { this@TransactionsFragment.viewModel.deleteAllTransactions() }
+            restoreAllTransactions.setOnClickListener { this@TransactionsFragment.viewModel.restoreTransactions() }
+        }
+
+        setupRecycler()
+        setupObservers()
+        viewModel.getTransactions()
+    }
+
+    private fun setupObservers() {
+        viewModel.transactions.observe(viewLifecycleOwner, Observer { adapter.addTransactions(it) })
+        viewModel.labelMessage.observe(viewLifecycleOwner, Observer {
+            binding.message.text = when (it) {
+                EMPTY -> getString(R.string.no_data)
+                else -> getString(R.string.internet_error)
+            }
+        })
+    }
+
 
     private fun setupRecycler() {
         transactionRecyclerView.adapter = adapter
@@ -160,81 +147,11 @@ class TransactionsFragment : Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        if (binding.root.parent != null) (binding.root
-            .parent as ViewGroup).removeView(binding.root)
-    }
-
     private fun navigateToTransactionInfo(transaction: Transaction) {
-
-    }
-
-    private fun createFakeTransactions(): MutableList<Transaction> {
-        return mutableListOf(
-            Transaction(
-                1,
-                200,
-                1,
-                "2020-02-22",
-                "viva",
-                "bogota",
-                true
-            ),
-            Transaction(
-                2,
-                201,
-                2,
-                "2020-01-24",
-                "viva",
-                "bogota",
-                true
-            ),
-            Transaction(
-                3,
-                202,
-                2,
-                "2020-01-22",
-                "viva",
-                "bogota",
-                true
-            ),
-            Transaction(
-                4,
-                203,
-                2,
-                "2020-01-25",
-                "viva",
-                "bogota",
-                true
-            ),
-            Transaction(
-                5,
-                204,
-                2,
-                "2020-01-26",
-                "viva",
-                "bogota",
-                true
-            ),
-            Transaction(
-                6,
-                200,
-                2,
-                "2020-01-27",
-                "viva",
-                "bogota",
-                false
-            ),
-            Transaction(
-                7,
-                205,
-                2,
-                "2020-01-28",
-                "viva",
-                "bogota",
-                true
+        val action =
+            TransactionsFragmentDirections.actionTransactionsFragmentToTransactionDetailFragment(
+                transaction
             )
-        )
+        findNavController().navigate(action)
     }
 }

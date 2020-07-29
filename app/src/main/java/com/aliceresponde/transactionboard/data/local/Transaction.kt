@@ -13,9 +13,5 @@ data class TransactionEntity(
     val commerceName: String,
     val branchName: String,
 
-    val points: Int = 0,
-    val clientName: String = "",
-    val value: Int = 0,
-
     val isNew: Boolean = true
 )

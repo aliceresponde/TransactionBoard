@@ -1,4 +1,4 @@
-package com.aliceresponde.transactionboard.domain.useCase
+package com.aliceresponde.transactionboard.domain.useCase.transaction
 
 import com.aliceresponde.transactionboard.data.local.TransactionEntity
 import com.aliceresponde.transactionboard.data.repository.TransactionRepository
@@ -16,8 +16,9 @@ class GetTransactionsUseCaseImp(private val repository: TransactionRepository) :
         return transactionEntities.map(::transactionEntityToTransaction)
     }
 
-    override suspend fun deleteAllTransactions() {
+    override suspend fun deleteAllTransactions(): List<Transaction> {
         repository.deleteAllTransactions()
+        return listOf()
     }
 
     override suspend fun updateTransaction(transaction: Transaction, isNew: Boolean) {

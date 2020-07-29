@@ -2,7 +2,9 @@ package com.aliceresponde.transactionboard.data.repository
 
 import com.aliceresponde.transactionboard.data.local.TransactionEntity
 import com.aliceresponde.transactionboard.data.remote.NoInternetException
+import com.aliceresponde.transactionboard.data.remote.response.TransactionInfoResponse
 import com.aliceresponde.transactionboard.data.remote.response.TransactionResponse
+import com.aliceresponde.transactionboard.data.remote.response.UserResponse
 import com.aliceresponde.transactionboard.data.repository.source.LocalDataSource
 import com.aliceresponde.transactionboard.data.repository.source.RemoteDataSource
 import javax.inject.Inject
@@ -15,10 +17,14 @@ class TransactionRepositoryImp @Inject constructor(
 
     override suspend fun getTransactions(): List<TransactionEntity> {
         return try {
-            val remoteData = remoteDataSource.getTransactions().transactions
-            val entities = remoteData.map(::transactionResponseToEntity)
-            localDataSource.insertAll(entities)
-            localDataSource.getAll()
+            val local = localDataSource.getAll()
+            return if (local.isNotEmpty()) local
+            else {
+                val remoteData = remoteDataSource.getTransactions()
+                val entities = remoteData.map(::transactionResponseToEntity)
+                localDataSource.insertAll(entities)
+                localDataSource.getAll()
+            }
         } catch (e: NoInternetException) {
             localDataSource.getAll()
         }
@@ -26,7 +32,7 @@ class TransactionRepositoryImp @Inject constructor(
 
     override suspend fun restoreData(): List<TransactionEntity> {
         return try {
-            val remoteData = remoteDataSource.getTransactions().transactions
+            val remoteData = remoteDataSource.getTransactions()
             val newEntities = remoteData.map(::transactionResponseToEntity)
             return localDataSource.restoreData(newEntities)
         } catch (e: NoInternetException) {
@@ -40,6 +46,14 @@ class TransactionRepositoryImp @Inject constructor(
 
     override suspend fun updateTransaction(transaction: TransactionEntity) {
         localDataSource.update(transaction)
+    }
+
+    override suspend fun getUserInfo(id: Int): UserResponse {
+        return remoteDataSource.getUserById(id)
+    }
+
+    override suspend fun getTransactionInfo(id: Int): TransactionInfoResponse {
+        return remoteDataSource.getTransactionInfo(id)
     }
 
     private fun transactionResponseToEntity(t: TransactionResponse): TransactionEntity {

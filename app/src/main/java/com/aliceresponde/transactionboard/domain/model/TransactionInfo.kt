@@ -1,4 +1,4 @@
-package com.aliceresponde.transactionboard.domain.useCase
+package com.aliceresponde.transactionboard.domain.model
 
 data class TransactionInfo(
     val transactionId: Int,

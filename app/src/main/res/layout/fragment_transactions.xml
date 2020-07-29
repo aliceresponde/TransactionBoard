@@ -12,20 +12,25 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
+        android:background="@android:color/darker_gray"
         android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/transactions"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_margin="10dp"
+            android:background="@android:color/white"
             android:orientation="vertical"
             android:visibility="@{viewModel.transactionVisibility}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@+id/delete_all_transactions"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:itemCount="20"
+            app:layout_constraintVertical_bias="0.0"
+            tools:itemCount="232"
             tools:listitem="@layout/transaction_row" />
 
         <TextView
