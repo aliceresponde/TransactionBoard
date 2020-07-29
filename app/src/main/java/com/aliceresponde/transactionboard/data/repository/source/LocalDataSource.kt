@@ -9,4 +9,5 @@ interface LocalDataSource {
     suspend fun update(transaction: TransactionEntity)
     suspend fun deleteAllTransactions()
     suspend fun restoreData(transactions: List<TransactionEntity>): List<TransactionEntity>
+    suspend fun deleteTransaction(transaction: TransactionEntity)
 }

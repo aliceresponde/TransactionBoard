@@ -7,4 +7,5 @@ interface GetTransactionsUseCase {
     suspend fun restoreData(): List<Transaction>
     suspend fun deleteAllTransactions(): List<Transaction>
     suspend fun updateTransaction(transaction: Transaction, isNew : Boolean)
+    suspend fun deleteTransaction(transaction: Transaction): List<Transaction>
 }

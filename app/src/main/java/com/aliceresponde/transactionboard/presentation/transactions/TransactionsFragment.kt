@@ -8,7 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout.VERTICAL
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -29,7 +29,12 @@ import dagger.hilt.android.AndroidEntryPoint
 class TransactionsFragment : Fragment() {
     private lateinit var binding: FragmentTransactionsBinding
     private val viewModel: TransactionsViewModel by viewModels()
-    private val adapter: TransactionsAdapter by lazy { TransactionsAdapter(onItemClicked = this::navigateToTransactionInfo) }
+    private val adapter: TransactionsAdapter by lazy {
+        TransactionsAdapter(
+            onItemClicked = this::navigateToTransactionInfo,
+            onItemDeleted = this::deleteTransaction
+        )
+    }
 
     private lateinit var swipeBackground: ColorDrawable
     private lateinit var deleteIcon: Drawable
@@ -119,17 +124,19 @@ class TransactionsFragment : Fragment() {
         binding.apply {
             viewModel = this@TransactionsFragment.viewModel
             lifecycleOwner = this@TransactionsFragment
+            transactions.adapter = adapter
+            transactions.addItemDecoration(DividerItemDecoration(context, LinearLayout.VERTICAL))
             deleteAllTransactions.setOnClickListener { this@TransactionsFragment.viewModel.deleteAllTransactions() }
             restoreAllTransactions.setOnClickListener { this@TransactionsFragment.viewModel.restoreTransactions() }
         }
 
-        setupRecycler()
+        swipeToDeleteGesture()
         setupObservers()
         viewModel.getTransactions()
     }
 
     private fun setupObservers() {
-        viewModel.transactions.observe(viewLifecycleOwner, Observer { adapter.addTransactions(it) })
+        viewModel.transactions.observe(viewLifecycleOwner, Observer { adapter.updateData(it) })
         viewModel.labelMessage.observe(viewLifecycleOwner, Observer {
             binding.message.text = when (it) {
                 EMPTY -> getString(R.string.no_data)
@@ -138,13 +145,9 @@ class TransactionsFragment : Fragment() {
         })
     }
 
-
-    private fun setupRecycler() {
-        transactionRecyclerView.adapter = adapter
-        transactionRecyclerView.addItemDecoration(DividerItemDecoration(context, VERTICAL))
-        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback).apply {
-            attachToRecyclerView(transactionRecyclerView)
-        }
+    private fun swipeToDeleteGesture() {
+        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(binding.transactions)
     }
 
     private fun navigateToTransactionInfo(transaction: Transaction) {
@@ -153,5 +156,9 @@ class TransactionsFragment : Fragment() {
                 transaction
             )
         findNavController().navigate(action)
+    }
+
+    private fun deleteTransaction(transaction: Transaction) {
+        viewModel.deleteTransaction(transaction)
     }
 }

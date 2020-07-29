@@ -7,10 +7,11 @@ import com.aliceresponde.transactionboard.data.remote.response.UserResponse
 interface TransactionRepository {
     suspend fun getTransactions(): List<TransactionEntity>
     suspend fun deleteAllTransactions()
+    suspend fun deleteTransaction(transaction: TransactionEntity): List<TransactionEntity>
     suspend fun updateTransaction(transaction: TransactionEntity)
+
     suspend fun restoreData(): List<TransactionEntity>
 
     suspend fun getUserInfo(id: Int): UserResponse
-
     suspend fun getTransactionInfo(id: Int): TransactionInfoResponse
 }

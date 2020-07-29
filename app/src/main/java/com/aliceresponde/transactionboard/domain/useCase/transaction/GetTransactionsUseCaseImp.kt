@@ -27,6 +27,20 @@ class GetTransactionsUseCaseImp(private val repository: TransactionRepository) :
         repository.updateTransaction(transactionEntity)
     }
 
+    override suspend fun deleteTransaction(transaction: Transaction): List<Transaction> {
+        val entity =TransactionEntity(
+            transaction.id,
+            transaction.userId,
+            transaction.createdDate,
+            transaction.commerceId,
+            transaction.commerceName,
+            transaction.branchName,
+            isNew = transaction.isNew
+        )
+        val result = repository.deleteTransaction(entity)
+        return  result.map (::transactionEntityToTransaction)
+    }
+
     private fun transactionToEntity(transaction: Transaction): TransactionEntity =
         TransactionEntity(
             transaction.id,

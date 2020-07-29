@@ -32,7 +32,6 @@ class TransactionsViewModel @ViewModelInject constructor
     private val _messageVisibility = MutableLiveData<Int>(GONE)
     val messageVisibility: LiveData<Int> get() = _messageVisibility
 
-
     fun getTransactions() {
         transactions.value?.let {
             if (it.isNotEmpty()) return
@@ -41,8 +40,18 @@ class TransactionsViewModel @ViewModelInject constructor
             withContext(IO) {
                 showLoading()
                 val data = useCase.getTransactions()
-                if (data.isEmpty()) noDataAble()
-                else showData(data)
+                updateContentToShow(data)
+                _loadingVisibility.postValue(GONE)
+            }
+        }
+    }
+
+    fun deleteTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            withContext(IO) {
+                val data = useCase.deleteTransaction(transaction)
+                showLoading()
+                updateContentToShow(data)
                 _loadingVisibility.postValue(GONE)
             }
         }
@@ -53,8 +62,7 @@ class TransactionsViewModel @ViewModelInject constructor
             withContext(IO) {
                 showLoading()
                 val data = useCase.deleteAllTransactions()
-                if (data.isEmpty()) noDataAble()
-                else showData(data)
+                updateContentToShow(data)
                 _loadingVisibility.postValue(GONE)
             }
         }
@@ -65,11 +73,15 @@ class TransactionsViewModel @ViewModelInject constructor
             withContext(IO) {
                 showLoading()
                 val data = useCase.restoreData()
-                if (data.isEmpty()) noDataAble()
-                else showData(data)
+                updateContentToShow(data)
                 _loadingVisibility.postValue(GONE)
             }
         }
+    }
+
+    private fun updateContentToShow(data: List<Transaction>) {
+        if (data.isEmpty()) noDataAble()
+        else showData(data)
     }
 
     private fun showLoading() {
@@ -86,7 +98,6 @@ class TransactionsViewModel @ViewModelInject constructor
     }
 
     private fun showData(data: List<Transaction>) {
-        _transactions.postValue(data)
         _messageVisibility.postValue(GONE)
         _transactionVisibility.postValue(VISIBLE)
         _transactions.postValue(data)
