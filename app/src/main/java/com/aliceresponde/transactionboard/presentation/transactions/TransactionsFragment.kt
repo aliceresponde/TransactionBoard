@@ -22,24 +22,20 @@ import com.aliceresponde.transactionboard.R
 import com.aliceresponde.transactionboard.databinding.FragmentTransactionsBinding
 import com.aliceresponde.transactionboard.domain.model.Transaction
 import com.aliceresponde.transactionboard.presentation.transactions.TransactionMessage.EMPTY
+import com.aliceresponde.transactionboard.presentation.transactions.TransactionsFragmentDirections.Companion.actionTransactionsFragmentToTransactionDetailFragment
+import com.aliceresponde.transactionboard.utils.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
 class TransactionsFragment : Fragment() {
-    private lateinit var binding: FragmentTransactionsBinding
     private val viewModel: TransactionsViewModel by viewModels()
     private val adapter: TransactionsAdapter by lazy {
         TransactionsAdapter(
-            onItemClicked = this::navigateToTransactionInfo,
+            onItemClicked = viewModel::onTransactionClickedListener,
             onItemDeleted = this::deleteTransaction
         )
     }
-
-    private lateinit var swipeBackground: ColorDrawable
-    private lateinit var deleteIcon: Drawable
-
-    private val transactionRecyclerView: RecyclerView by lazy { binding.transactions }
     private val itemTouchHelperCallback =
         object : ItemTouchHelper.SimpleCallback(0, LEFT) {
             override fun onMove(
@@ -89,29 +85,16 @@ class TransactionsFragment : Fragment() {
                 c.restore()
                 deleteIcon.draw(c)
 
-                super.onChildDraw(
-                    c,
-                    recyclerView,
-                    viewHolder,
-                    dX,
-                    dY,
-                    actionState,
-                    isCurrentlyActive
-                )
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
         }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        binding = DataBindingUtil.inflate(
-            layoutInflater,
-            R.layout.fragment_transactions,
-            container,
-            false
-        )
+    private lateinit var binding: FragmentTransactionsBinding
+    private lateinit var swipeBackground: ColorDrawable
+    private lateinit var deleteIcon: Drawable
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        binding = DataBindingUtil.inflate(layoutInflater, R.layout.fragment_transactions, container, false)
         activity?.baseContext?.let {
             swipeBackground = ColorDrawable(ContextCompat.getColor(it, R.color.red))
             deleteIcon = ContextCompat.getDrawable(it, R.drawable.ic_delete)!!
@@ -137,6 +120,7 @@ class TransactionsFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.transactions.observe(viewLifecycleOwner, Observer { adapter.updateData(it) })
+        viewModel.navigateToDetail.observe(viewLifecycleOwner, EventObserver(::navigateToTransactionInfo))
         viewModel.labelMessage.observe(viewLifecycleOwner, Observer {
             binding.message.text = when (it) {
                 EMPTY -> getString(R.string.no_data)
@@ -151,14 +135,9 @@ class TransactionsFragment : Fragment() {
     }
 
     private fun navigateToTransactionInfo(transaction: Transaction) {
-        val action =
-            TransactionsFragmentDirections.actionTransactionsFragmentToTransactionDetailFragment(
-                transaction
-            )
+        val action = actionTransactionsFragmentToTransactionDetailFragment(transaction)
         findNavController().navigate(action)
     }
 
-    private fun deleteTransaction(transaction: Transaction) {
-        viewModel.deleteTransaction(transaction)
-    }
+    private fun deleteTransaction(transaction: Transaction) = viewModel.deleteTransaction(transaction)
 }
