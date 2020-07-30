@@ -7,9 +7,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aliceresponde.transactionboard.data.remote.NoInternetException
 import com.aliceresponde.transactionboard.domain.model.Transaction
 import com.aliceresponde.transactionboard.domain.useCase.transaction.GetTransactionsUseCase
 import com.aliceresponde.transactionboard.presentation.transactions.TransactionMessage.EMPTY
+import com.aliceresponde.transactionboard.presentation.transactions.TransactionMessage.INTERNET_ERROR
+import com.aliceresponde.transactionboard.utils.Event
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,6 +22,10 @@ class TransactionsViewModel @ViewModelInject constructor
 
     private val _transactions = MutableLiveData<List<Transaction>>(listOf())
     val transactions: LiveData<List<Transaction>> get() = _transactions
+
+    private val _navigateToDetail = MutableLiveData<Event<Transaction>>()
+    val navigateToDetail: LiveData<Event<Transaction>> get() = _navigateToDetail
+
 
     private val _labelMessage = MutableLiveData<TransactionMessage>()
     val labelMessage: LiveData<TransactionMessage> get() = _labelMessage
@@ -36,12 +43,12 @@ class TransactionsViewModel @ViewModelInject constructor
         transactions.value?.let {
             if (it.isNotEmpty()) return
         }
-        viewModelScope.launch {
-            withContext(IO) {
-                showLoading()
-                val data = useCase.getTransactions()
-                updateContentToShow(data)
-                _loadingVisibility.postValue(GONE)
+            viewModelScope.launch {
+                withContext(IO) {
+                    showLoading()
+                    val data = useCase.getTransactions()
+                    updateContentToShow(data)
+                    _loadingVisibility.postValue(GONE)
             }
         }
     }
@@ -68,13 +75,26 @@ class TransactionsViewModel @ViewModelInject constructor
         }
     }
 
+    fun onTransactionClickedListener(transaction: Transaction) {
+        if (transaction.isNew) {
+            viewModelScope.launch {
+                withContext(IO) {
+                    showLoading()
+                    useCase.updateTransaction(transaction, false)
+                    _loadingVisibility.postValue(GONE)
+                }
+            }
+        }
+        _navigateToDetail.value = Event(transaction)
+    }
+
     fun restoreTransactions() {
-        viewModelScope.launch {
-            withContext(IO) {
-                showLoading()
-                val data = useCase.restoreData()
-                updateContentToShow(data)
-                _loadingVisibility.postValue(GONE)
+            viewModelScope.launch {
+                withContext(IO) {
+                    showLoading()
+                    val data = useCase.restoreData()
+                    updateContentToShow(data)
+                    _loadingVisibility.postValue(GONE)
             }
         }
     }
