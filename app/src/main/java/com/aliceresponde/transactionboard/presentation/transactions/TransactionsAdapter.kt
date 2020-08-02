@@ -9,12 +9,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.aliceresponde.transactionboard.R
 import com.aliceresponde.transactionboard.databinding.TransactionRowBinding
 import com.aliceresponde.transactionboard.domain.model.Transaction
-import com.google.android.material.snackbar.Snackbar
 
 class TransactionsAdapter(
     private var transactions: MutableList<Transaction> = mutableListOf(),
     private val onItemClicked: (Transaction) -> Unit,
-    private val onItemDeleted : (Transaction) -> Unit
+    private val onItemDeleted: (Transaction) -> Unit
 ) : RecyclerView.Adapter<TransactionsAdapter.TransactionViewHolder>() {
     private var removedPos = -1
     private lateinit var removedItem: Transaction

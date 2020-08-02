@@ -1,5 +1,10 @@
 package com.aliceresponde.transactionboard.data.repository
 
+import com.aliceresponde.transactionboard.data.ErrorResource
+import com.aliceresponde.transactionboard.data.Resource
+import com.aliceresponde.transactionboard.data.Resource.Companion.INTERNAL_DB_ERROR_MESSAGE
+import com.aliceresponde.transactionboard.data.Resource.Companion.INTERNET_ERROR_MESSAGE
+import com.aliceresponde.transactionboard.data.SuccessResource
 import com.aliceresponde.transactionboard.data.local.TransactionEntity
 import com.aliceresponde.transactionboard.data.remote.NoInternetException
 import com.aliceresponde.transactionboard.data.remote.response.TransactionInfoResponse
@@ -15,50 +20,63 @@ class TransactionRepositoryImp @Inject constructor(
     private val localDataSource: LocalDataSource
 ) : TransactionRepository {
 
-    override suspend fun getTransactions(): List<TransactionEntity> {
+    override suspend fun getTransactions(): Resource<List<TransactionEntity>> {
         return try {
             val local = localDataSource.getAll()
-            return if (local.isNotEmpty()) local
+            return if (local.isNotEmpty()) SuccessResource(local)
             else {
                 val remoteData = remoteDataSource.getTransactions()
                 val entities = remoteData.map(::transactionResponseToEntity)
                 localDataSource.insertAll(entities)
-                localDataSource.getAll()
+                SuccessResource(localDataSource.getAll())
             }
         } catch (e: NoInternetException) {
-            localDataSource.getAll()
+            ErrorResource(INTERNET_ERROR_MESSAGE)
         }
     }
 
-    override suspend fun restoreData(): List<TransactionEntity> {
+    override suspend fun restoreData(): Resource<List<TransactionEntity>> {
         return try {
             val remoteData = remoteDataSource.getTransactions()
             val newEntities = remoteData.map(::transactionResponseToEntity)
-            return localDataSource.restoreData(newEntities)
+            SuccessResource(localDataSource.restoreData(newEntities))
         } catch (e: NoInternetException) {
-            localDataSource.getAll()
+            ErrorResource(INTERNET_ERROR_MESSAGE)
         }
     }
 
-    override suspend fun deleteAllTransactions() {
-        localDataSource.deleteAllTransactions()
-    }
+    override suspend fun deleteAllTransactions() = localDataSource.deleteAllTransactions()
 
-    override suspend fun deleteTransaction(transaction: TransactionEntity): List<TransactionEntity> {
-        localDataSource.deleteTransaction(transaction)
-        return localDataSource.getAll()
+    override suspend fun deleteTransaction(transaction: TransactionEntity): Resource<List<TransactionEntity>> {
+        return try {
+            localDataSource.deleteTransaction(transaction)
+            val data = localDataSource.getAll()
+            SuccessResource(data)
+        } catch (e: Exception) {
+            ErrorResource(INTERNAL_DB_ERROR_MESSAGE)
+        }
     }
 
     override suspend fun updateTransaction(transaction: TransactionEntity) {
         localDataSource.update(transaction)
     }
 
-    override suspend fun getUserInfo(id: Int): UserResponse {
-        return remoteDataSource.getUserById(id)
+    override suspend fun getUserInfo(id: Int): Resource<UserResponse> {
+        return try {
+            val data = remoteDataSource.getUserById(id)
+            SuccessResource(data)
+        } catch (e: NoInternetException) {
+            ErrorResource(INTERNET_ERROR_MESSAGE)
+        }
     }
 
-    override suspend fun getTransactionInfo(id: Int): TransactionInfoResponse {
-        return remoteDataSource.getTransactionInfo(id)
+    override suspend fun getTransactionInfo(id: Int): Resource<TransactionInfoResponse> {
+        return try {
+            val data = remoteDataSource.getTransactionInfo(id)
+            SuccessResource(data)
+        } catch (e: NoInternetException) {
+            ErrorResource(message = INTERNET_ERROR_MESSAGE)
+        }
     }
 
     private fun transactionResponseToEntity(t: TransactionResponse): TransactionEntity {

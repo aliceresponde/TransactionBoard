@@ -12,8 +12,7 @@ class RetrofitDataSource @Inject constructor (private val service: LealApiServic
 
     override suspend fun getUserById(id: Int): UserResponse = service.getUserById(id)
 
-    override suspend fun getTransactionInfo(id: Int): TransactionInfoResponse =
-        service.getTransactionInfo(id)
+    override suspend fun getTransactionInfo(id: Int): TransactionInfoResponse = service.getTransactionInfo(id)
 
     override suspend fun getUserInfo(id: Int): UserResponse = service.getUserById(id)
 }

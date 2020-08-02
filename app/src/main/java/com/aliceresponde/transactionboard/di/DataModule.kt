@@ -2,10 +2,12 @@ package com.aliceresponde.transactionboard.di
 
 import android.app.Application
 import android.content.Context
+import android.net.ConnectivityManager
 import androidx.room.Room
 import com.aliceresponde.transactionboard.data.local.AppDatabase
 import com.aliceresponde.transactionboard.data.local.RoomDataSource
 import com.aliceresponde.transactionboard.data.remote.LealApiService
+import com.aliceresponde.transactionboard.data.remote.NetworkConnection
 import com.aliceresponde.transactionboard.data.remote.NetworkConnectionInterceptor
 import com.aliceresponde.transactionboard.data.remote.RetrofitDataSource
 import com.aliceresponde.transactionboard.data.repository.*
@@ -46,6 +48,15 @@ object DataModule {
     @Provides
     @Singleton
     fun provideApiService(interceptor: Interceptor) = LealApiService.invoke(interceptor)
+
+
+    @Provides
+    @Singleton
+    fun provideConnectivityManager(@ApplicationContext context: Context) : ConnectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    @Provides
+    @Singleton
+    fun provideNetworkConnection(@ApplicationContext context: Context, connectivityManager: ConnectivityManager) = NetworkConnection( context, connectivityManager)
 
     // dataSource
     @Provides

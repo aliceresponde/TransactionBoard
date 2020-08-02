@@ -19,12 +19,14 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.aliceresponde.transactionboard.R
+import com.aliceresponde.transactionboard.data.remote.NetworkConnection
 import com.aliceresponde.transactionboard.databinding.FragmentTransactionsBinding
 import com.aliceresponde.transactionboard.domain.model.Transaction
 import com.aliceresponde.transactionboard.presentation.transactions.TransactionMessage.EMPTY
 import com.aliceresponde.transactionboard.presentation.transactions.TransactionsFragmentDirections.Companion.actionTransactionsFragmentToTransactionDetailFragment
 import com.aliceresponde.transactionboard.utils.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -85,7 +87,15 @@ class TransactionsFragment : Fragment() {
                 c.restore()
                 deleteIcon.draw(c)
 
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                super.onChildDraw(
+                    c,
+                    recyclerView,
+                    viewHolder,
+                    dX,
+                    dY,
+                    actionState,
+                    isCurrentlyActive
+                )
             }
         }
 
@@ -93,8 +103,21 @@ class TransactionsFragment : Fragment() {
     private lateinit var swipeBackground: ColorDrawable
     private lateinit var deleteIcon: Drawable
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(layoutInflater, R.layout.fragment_transactions, container, false)
+    @Inject
+    lateinit var networkConnection: NetworkConnection
+
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = DataBindingUtil.inflate(
+            layoutInflater,
+            R.layout.fragment_transactions,
+            container,
+            false
+        )
         activity?.baseContext?.let {
             swipeBackground = ColorDrawable(ContextCompat.getColor(it, R.color.red))
             deleteIcon = ContextCompat.getDrawable(it, R.drawable.ic_delete)!!
@@ -104,23 +127,36 @@ class TransactionsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding.apply {
             viewModel = this@TransactionsFragment.viewModel
             lifecycleOwner = this@TransactionsFragment
             transactions.adapter = adapter
             transactions.addItemDecoration(DividerItemDecoration(context, LinearLayout.VERTICAL))
-            deleteAllTransactions.setOnClickListener { this@TransactionsFragment.viewModel.deleteAllTransactions() }
-            restoreAllTransactions.setOnClickListener { this@TransactionsFragment.viewModel.restoreTransactions() }
+            deleteAllTransactions.setOnClickListener {
+                this@TransactionsFragment.viewModel.deleteAllTransactions()
+            }
+            restoreAllTransactions.setOnClickListener {
+                this@TransactionsFragment.viewModel.updateConnectionState(networkConnection.isConnected())
+                this@TransactionsFragment.viewModel.restoreTransactions()
+            }
         }
 
         swipeToDeleteGesture()
         setupObservers()
+        viewModel.updateConnectionState(networkConnection.isConnected())
         viewModel.getTransactions()
     }
 
     private fun setupObservers() {
+        networkConnection.observe(
+            viewLifecycleOwner,
+            Observer { this@TransactionsFragment.viewModel.updateConnectionState(networkConnection.isConnected()) })
         viewModel.transactions.observe(viewLifecycleOwner, Observer { adapter.updateData(it) })
-        viewModel.navigateToDetail.observe(viewLifecycleOwner, EventObserver(::navigateToTransactionInfo))
+        viewModel.navigateToDetail.observe(
+            viewLifecycleOwner,
+            EventObserver(::navigateToTransactionInfo)
+        )
         viewModel.labelMessage.observe(viewLifecycleOwner, Observer {
             binding.message.text = when (it) {
                 EMPTY -> getString(R.string.no_data)
@@ -139,5 +175,6 @@ class TransactionsFragment : Fragment() {
         findNavController().navigate(action)
     }
 
-    private fun deleteTransaction(transaction: Transaction) = viewModel.deleteTransaction(transaction)
+    private fun deleteTransaction(transaction: Transaction) =
+        viewModel.deleteTransaction(transaction)
 }

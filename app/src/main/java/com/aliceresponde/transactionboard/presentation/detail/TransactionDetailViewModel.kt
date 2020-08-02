@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aliceresponde.transactionboard.domain.SuccessState
 import com.aliceresponde.transactionboard.domain.model.Transaction
 import com.aliceresponde.transactionboard.domain.model.TransactionInfo
 import com.aliceresponde.transactionboard.domain.model.User
@@ -39,21 +40,19 @@ class TransactionDetailViewModel @ViewModelInject constructor(
         viewModelScope.launch {
             withContext(IO) {
                 val user = getUserInfo.getUserInfo(id)
-                _user.postValue(user)
-                // TODO verify  no internet
+                if (user is SuccessState)
+                    _user.postValue(user.data)
             }
         }
     }
 
     fun getTransactionInfo(id: Int) {
+
         viewModelScope.launch {
             withContext(IO) {
                 val transactionInfo = getTransactionInfo.getTransactionInfo(id)
-                _transactionInfo.postValue(transactionInfo)
-                // TODO verify  no internet
+                if (transactionInfo is SuccessState) _transactionInfo.postValue(transactionInfo.data)
             }
         }
     }
-
-
 }
